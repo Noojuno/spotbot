@@ -1,0 +1,29 @@
+{
+  "name": "spotbot",
+  "version": "1.0.0",
+  "description": "A super cool Spotify bot!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run test:create && npm run test:add && npm run test:search",
+    "test:create": "lambda-local -f index.js -e events/create.json",
+    "test:add": "lambda-local -f index.js -e events/add.json",
+    "test:search": "lambda-local -f index.js -e events/search.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Noojuno/spotbot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Noojuno/spotbot/issues"
+  },
+  "homepage": "https://github.com/Noojuno/spotbot#readme",
+  "dependencies": {
+    "spotify-web-api-node": "^3.1.1"
+  },
+  "devDependencies": {
+    "aws-lambda-local": "^1.0.15"
+  }
+}
