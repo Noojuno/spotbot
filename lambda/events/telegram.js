@@ -15,7 +15,7 @@ const body = {
       first_name: "Test",
       username: "Test"
     },
-    text: "@SpotBot /create Test"
+    text: '@SpotBot /create Test playlist name "This is more args"'
   }
 };
 
