@@ -4,6 +4,9 @@ const argsRegex = /[^\s"]+|"([^"]*)"/gi;
 
 const parse = async message => {
   const res = commandRegex.exec(message);
+  if (!res || res.length < 2) {
+    return { error: new Error("No command found") };
+  }
   const commandData = {
     full: res[0],
     command: res[2],
@@ -14,6 +17,9 @@ const parse = async message => {
   const args = parseArguments(res[3]);
 
   const command = commands.find(e => e.command == res[2]);
+  if (!command) {
+    return { error: new Error("Invalid command") };
+  }
 
   let data = { message, args: args };
 
