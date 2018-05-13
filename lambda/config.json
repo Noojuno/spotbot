@@ -16,5 +16,9 @@
       "scope":
         "playlist-read-private user-library-read user-library-modify playlist-modify-private playlist-modify-public"
     }
+  },
+  "telegram": {
+    "bot_id": "595990576",
+    "bot_secret": "AAEhz8AkMtpFO_r6OTJxPQVNkxg0fHHSKLA"
   }
 }

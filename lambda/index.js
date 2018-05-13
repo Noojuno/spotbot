@@ -18,11 +18,7 @@ const SpotifyApi = new Spotify({
 });
 
 const PLATFORMS = { telegram };
-let ACTIVE_PLATFORM = {
-  formatResponse: i => {
-    return i;
-  }
-};
+let ACTIVE_PLATFORM = {};
 
 const initCommands = async () => {
   commands.add("create", async data => {
@@ -35,13 +31,28 @@ const initCommands = async () => {
 
     data.error = res.error || null;
     data.res = res;
+    if (!res.error) {
+      data.message = `Successfully created playlist: "${playlistName}"`;
+    }
     config.spotify.selected_playlist = res.id;
   });
 
   commands.add("select", async data => {
-    const playlistId = data.args[0];
+    const playlistUrl = data.args.join("");
+    const playlistRegex = /^https?:\/\/(?:open|play)\.spotify\.com\/user\/([\w\d]+)\/playlist\/[\w\d]+$/i;
 
-    config.spotify.selected_playlist = playlistId;
+    const regexRes = playlistRegex.exec(url);
+
+    if (!regexRes || !regexRes[1]) {
+      data.error = new Error("Invalid input url");
+      return;
+    }
+
+    if (!data.error) {
+      data.message = `Playlist with id of "${regexRes[1]}" has been selected"`;
+    }
+
+    config.spotify.selected_playlist = regexRes[1];
   });
 
   commands.add("add", async data => {
@@ -70,16 +81,28 @@ const initCommands = async () => {
 
     data.error = res.error || null;
     data.res = res;
+    console.log(res);
+    if (!data.error) {
+      data.message = `Song has been added to playlist`;
+    }
     config.spotify.selected_playlist = res.id;
   });
 };
 
 const generateApiResponse = async (status, body) => {
-  return ACTIVE_PLATFORM.formatResponse({
+  await saveConfig();
+
+  const response = {
     statusCode: status,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
-  });
+  };
+
+  if (ACTIVE_PLATFORM.sendBotResponse) {
+    await ACTIVE_PLATFORM.sendBotResponse({ ...response, body }, config);
+  }
+
+  return response;
 };
 
 const getMessage = (platform, event) => {
@@ -117,6 +140,8 @@ const loadConfig = async () => {
 };
 
 exports.handler = async event => {
+  await saveConfig();
+
   if (
     !event.queryStringParameters ||
     !event.queryStringParameters.platform ||
@@ -171,10 +196,8 @@ exports.handler = async event => {
 
   if (error) {
     console.log(error);
-    return await generateApiResponse(400, { error });
+    return await generateApiResponse(400, { error: error.message });
   }
-
-  console.log(message);
 
   return await generateApiResponse(200, { message: message });
 };

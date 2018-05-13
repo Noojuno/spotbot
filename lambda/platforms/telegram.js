@@ -6,8 +6,37 @@ const getMessage = event => {
   return body.message.text;
 };
 
-const formatResponse = res => {
-  return res;
+const sendBotResponse = async (res, config) => {
+  const { bot_id, bot_secret } = config.telegram;
+  const url = `https://api.telegram.org/bot${bot_id}:${bot_secret}/sendMessage`;
+  let message = "";
+  let body = res.body;
+
+  if (body.error) {
+    message = body.error;
+  } else if (body.message) {
+    message = body.message;
+  }
+
+  const fetchBody = {
+    text: message,
+    chat_id
+  };
+
+  const options = {
+    method: "POST",
+    headers: {
+      "content-type": "application/json"
+    },
+    body: JSON.stringify(fetchBody)
+  };
+
+  try {
+    let fetchRes = await fetch(url, options);
+    return fetchRes.json();
+  } catch (e) {
+    return Promise.reject(e);
+  }
 };
 
-module.exports = { getMessage, formatResponse };
+module.exports = { getMessage, sendBotResponse };
