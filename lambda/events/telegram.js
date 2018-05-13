@@ -15,7 +15,7 @@ const body = {
       first_name: "Test",
       username: "Test"
     },
-    text: '@SpotBot /create Test playlist name "This is more args"'
+    text: '@SpotBot /add https://open.spotify.com/track/0Up4nx3BStTtlANnQD3Flb"'
   }
 };
 

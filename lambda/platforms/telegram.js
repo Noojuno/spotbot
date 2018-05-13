@@ -3,4 +3,8 @@ const getMessage = event => {
   return body.text;
 };
 
+const formatResponse = res => {
+  return { ...res };
+};
+
 module.exports = { getMessage };

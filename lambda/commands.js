@@ -15,7 +15,7 @@ const parse = async message => {
 
   const command = commands.find(e => e.command == res[2]);
 
-  let data = { message, args };
+  let data = { message, args: args };
 
   await command.fn(data);
 
@@ -37,10 +37,6 @@ const parseArguments = argsString => {
   } while (match != null);
 
   return args;
-};
-
-const defaultParse = message => {
-  return { command: "create", args: ["Test"] };
 };
 
 const add = (command, fn) => {
