@@ -13,28 +13,30 @@ client.on("ready", () => {
 });
 
 client.on("message", async msg => {
-  const body = {
-    message: msg.content
-  };
+  if (msg.author.id != client.user.id) {
+    const body = {
+      message: msg.content
+    };
 
-  const options = {
-    method: "POST",
-    headers: {
-      "content-type": "application/json"
-    },
-    body: JSON.stringify(body)
-  };
+    const options = {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(body)
+    };
 
-  try {
-    let res = await fetch(apiUrl, options).json();
+    try {
+      let res = await fetch(apiUrl, options);
+      res = await res.json();
+      console.log(res);
 
-    let resBody = JSON.parse(res.body);
-
-    if (resBody.message) {
-      msg.reply(resBody.message);
+      if (res.message) {
+        msg.channel.send(res.message);
+      }
+    } catch (e) {
+      console.log(e);
     }
-  } catch (e) {
-    console.log(e);
   }
 });
 
