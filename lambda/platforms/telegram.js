@@ -3,7 +3,8 @@ var chat_id = null;
 const getMessage = event => {
   const body = JSON.parse(event.body);
   chat_id = body.message.chat.id;
-  return body.message.text;
+
+  return body.message.text.replace("@SpotBotBot", "");
 };
 
 const sendBotResponse = async (res, config) => {

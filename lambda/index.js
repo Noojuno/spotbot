@@ -28,7 +28,9 @@ const initCommands = async () => {
     data.error = res.error || null;
     data.res = res;
     if (!res.error) {
-      data.message = `Successfully created playlist: "${playlistName}"`;
+      data.message = `Successfully created playlist: [${playlistName}](${
+        res.external_urls.spotify
+      })`;
     }
     config.set({ spotify: { selected_playlist: res.id } });
   });
@@ -37,7 +39,7 @@ const initCommands = async () => {
     const playlistUrl = data.args.join("");
     const playlistRegex = /^https?:\/\/(?:open|play)\.spotify\.com\/user\/([\w\d]+)\/playlist\/[\w\d]+$/i;
 
-    const regexRes = playlistRegex.exec(url);
+    const regexRes = playlistRegex.exec(playlistUrl);
 
     console.log(regexRes);
 
@@ -46,7 +48,7 @@ const initCommands = async () => {
       return;
     }
 
-    data.message = `Playlist with id of "${regexRes[1]}" has been selected"`;
+    data.message = `[Playlist](${playlistUrl}) has been selected`;
 
     config.set({ spotify: { selected_playlist: regexRes[1] } });
   });
@@ -69,23 +71,33 @@ const initCommands = async () => {
 
     let trackId = regexRes[1];
 
+    let { user_name, selected_playlist } = config.get().spotify;
+
     let res = await SpotifyApi.addSongToPlaylist(
       trackId,
-      config.get().spotify.selected_playlist,
-      config.get().spotify.user_name
+      selected_playlist,
+      user_name
     );
 
     data.error = res.error || null;
     data.res = res;
 
+    let playlistUrl =
+      "https://open.spotify.com/user/" +
+      user_name +
+      "/playlist/" +
+      selected_playlist;
+
     if (!res.error) {
-      data.message = `Song has been added to [playlist](${url})`;
+      data.message = `[Song](${url}) has been added to [playlist](${[
+        playlistUrl
+      ]})`;
     }
   });
 };
 
 const generateApiResponse = async (status, body) => {
-  await config.save();
+  //await config.save();
 
   const response = {
     statusCode: 200,
