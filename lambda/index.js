@@ -93,7 +93,7 @@ const generateApiResponse = async (status, body) => {
   await saveConfig();
 
   const response = {
-    statusCode: status,
+    statusCode: 200,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
   };
@@ -140,8 +140,6 @@ const loadConfig = async () => {
 };
 
 exports.handler = async event => {
-  await saveConfig();
-
   if (
     !event.queryStringParameters ||
     !event.queryStringParameters.platform ||
@@ -156,6 +154,14 @@ exports.handler = async event => {
 
   const platform = event.queryStringParameters.platform;
   ACTIVE_PLATFORM = PLATFORMS[platform];
+
+  if (ACTIVE_PLATFORM.checkRequest) {
+    let checkSuccess = ACTIVE_PLATFORM.checkRequest(event, config);
+
+    if (!checkSuccess) {
+      return;
+    }
+  }
 
   let spotify_access_token = config.spotify.tokens.access_token;
   let spotify_refresh_token = config.spotify.tokens.refresh_token;

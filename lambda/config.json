@@ -19,6 +19,7 @@
   },
   "telegram": {
     "bot_id": "595990576",
-    "bot_secret": "AAEhz8AkMtpFO_r6OTJxPQVNkxg0fHHSKLA"
+    "bot_secret": "AAEhz8AkMtpFO_r6OTJxPQVNkxg0fHHSKLA",
+    "last_update_id": 73616517
   }
 }
