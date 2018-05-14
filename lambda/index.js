@@ -1,6 +1,7 @@
 const Spotify = require("./platforms/spotify");
 
 const telegram = require("./platforms/telegram");
+const discord = require("./platforms/discord");
 const commands = require("./commands");
 const Config = require("./config");
 const defaultConfig = require("./config.json");
@@ -13,7 +14,7 @@ const SpotifyApi = new Spotify({
   redirect_uri: config.get().spotify.redirect_uri
 });
 
-const PLATFORMS = { telegram };
+const PLATFORMS = { telegram, discord };
 let ACTIVE_PLATFORM = {};
 
 const initCommands = async () => {
