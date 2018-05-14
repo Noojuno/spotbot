@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/Noojuno/spotbot#readme",
   "dependencies": {
+    "deepmerge": "^2.1.0",
     "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {

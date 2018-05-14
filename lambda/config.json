@@ -12,14 +12,15 @@
       "access_token":
         "BQCKBDT56c9ktS7K2n_h7Vt7UUQ5s1nr1Wmu8utdE1y9RZTxgII5SVvMg-m2KMQMYRJIrc0ZXmNP7raKHOSFGsnAbHM41_WRd-MMSUTe0NeQIaPfR6fSv_ON9uZM2R-CiVH4r8NThVh84VrKvHcyCpde-L-iebxTnItIanMGJDIAzRWf8LmaO5Lm8vlT53gPN0czrwprfp7GLYJ-KVGI3O3Zwgiix__hBIIrH7jOALS7Uj0wT7DX",
       "refresh_token":
-        "AQBuVX9xcpibkqdzs5D-D1qS1LwH4uZsxhe8wbGI4MESdWp1iXlybUsSldow7lQlqe66a2craobstlm9F-ykR3fM_d4U8wWkmCrmjyBHZn7Vkj4vkHkcfbmI5oyCnCuW3lQ",
-      "scope":
-        "playlist-read-private user-library-read user-library-modify playlist-modify-private playlist-modify-public"
+        "AQBuVX9xcpibkqdzs5D-D1qS1LwH4uZsxhe8wbGI4MESdWp1iXlybUsSldow7lQlqe66a2craobstlm9F-ykR3fM_d4U8wWkmCrmjyBHZn7Vkj4vkHkcfbmI5oyCnCuW3lQ"
     }
+  },
+  "aws": {
+    "region": "us-east-1",
+    "table_name": "spotbot_config"
   },
   "telegram": {
     "bot_id": "595990576",
-    "bot_secret": "AAEhz8AkMtpFO_r6OTJxPQVNkxg0fHHSKLA",
-    "last_update_id": 73616517
+    "bot_secret": "AAEhz8AkMtpFO_r6OTJxPQVNkxg0fHHSKLA"
   }
 }

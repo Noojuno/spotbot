@@ -1,20 +1,16 @@
-const Spotify = require("./spotify");
+const Spotify = require("./platforms/spotify");
 
 const telegram = require("./platforms/telegram");
 const commands = require("./commands");
-let config = require("./config.json");
+const Config = require("./config");
+const defaultConfig = require("./config.json");
 
-var AWS = require("aws-sdk");
-
-//need to update region in config
-AWS.config.update({
-  region: "us-east-1"
-});
+const config = new Config(defaultConfig);
 
 const SpotifyApi = new Spotify({
-  client_id: config.spotify.client_id,
-  client_secret: config.spotify.client_secret,
-  redirect_uri: config.spotify.redirect_uri
+  client_id: config.get().spotify.client_id,
+  client_secret: config.get().spotify.client_secret,
+  redirect_uri: config.get().spotify.redirect_uri
 });
 
 const PLATFORMS = { telegram };
@@ -26,7 +22,7 @@ const initCommands = async () => {
 
     let res = await SpotifyApi.createPlaylist(
       playlistName,
-      config.spotify.user_name
+      config.get().spotify.user_name
     );
 
     data.error = res.error || null;
@@ -34,7 +30,7 @@ const initCommands = async () => {
     if (!res.error) {
       data.message = `Successfully created playlist: "${playlistName}"`;
     }
-    config.spotify.selected_playlist = res.id;
+    config.set({ spotify: { selected_playlist: res.id } });
   });
 
   commands.add("select", async data => {
@@ -43,25 +39,25 @@ const initCommands = async () => {
 
     const regexRes = playlistRegex.exec(url);
 
+    console.log(regexRes);
+
     if (!regexRes || !regexRes[1]) {
       data.error = new Error("Invalid input url");
       return;
     }
 
-    if (!data.error) {
-      data.message = `Playlist with id of "${regexRes[1]}" has been selected"`;
-    }
+    data.message = `Playlist with id of "${regexRes[1]}" has been selected"`;
 
-    config.spotify.selected_playlist = regexRes[1];
+    config.set({ spotify: { selected_playlist: regexRes[1] } });
   });
 
   commands.add("add", async data => {
-    const spotifyUrlRegex = /https?:\/\/(?:embed\.|open\.)(?:spotify\.com\/)(?:track\/|\?uri=spotify:track:)((\w|-){22})/;
+    const trackRegex = /https?:\/\/(?:embed\.|open\.)(?:spotify\.com\/)(?:track\/|\?uri=spotify:track:)((\w|-){22})/;
     const url = data.args.join("");
 
-    const regexRes = spotifyUrlRegex.exec(url);
+    const regexRes = trackRegex.exec(url);
 
-    if (!config.spotify.selected_playlist) {
+    if (!config.get().spotify.selected_playlist) {
       data.error = new Error("No selected playlist");
       return;
     }
@@ -75,22 +71,21 @@ const initCommands = async () => {
 
     let res = await SpotifyApi.addSongToPlaylist(
       trackId,
-      config.spotify.selected_playlist,
-      config.spotify.user_name
+      config.get().spotify.selected_playlist,
+      config.get().spotify.user_name
     );
 
     data.error = res.error || null;
     data.res = res;
-    console.log(res);
-    if (!data.error) {
-      data.message = `Song has been added to playlist`;
+
+    if (!res.error) {
+      data.message = `Song has been added to [playlist](${url})`;
     }
-    config.spotify.selected_playlist = res.id;
   });
 };
 
 const generateApiResponse = async (status, body) => {
-  await saveConfig();
+  await config.save();
 
   const response = {
     statusCode: 200,
@@ -105,68 +100,31 @@ const generateApiResponse = async (status, body) => {
   return response;
 };
 
-const getMessage = (platform, event) => {
-  switch (platform) {
-    case "telegram":
-      return telegram.getMessage(event);
-      break;
+exports.handler = async (event, context, callback) => {
+  context.callbackWaitsForEmptyEventLoop = false;
 
-    default:
-      break;
-  }
-};
-
-const saveConfig = async () => {
-  let docClient = new AWS.DynamoDB.DocumentClient();
-
-  let configItem = {
-    TableName: "spotbot_config",
-    Item: config
-  };
-
-  return await docClient.put(configItem).promise();
-};
-
-const loadConfig = async () => {
-  let docClient = new AWS.DynamoDB.DocumentClient();
-
-  let configItem = {
-    TableName: "spotbot_config",
-    Key: { version: 1 }
-  };
-
-  let con = await docClient.get(configItem).promise();
-  return Promise.resolve(con.Item);
-};
-
-exports.handler = async event => {
   if (
     !event.queryStringParameters ||
     !event.queryStringParameters.platform ||
     !PLATFORMS[event.queryStringParameters.platform]
   ) {
-    return await generateApiResponse(404, { message: "Invalid platform" });
+    callback(
+      null,
+      await generateApiResponse(404, { message: "Invalid platform" })
+    );
   }
 
   console.log(event);
 
-  config = await loadConfig();
+  await config.load();
 
   const platform = event.queryStringParameters.platform;
   ACTIVE_PLATFORM = PLATFORMS[platform];
 
-  if (ACTIVE_PLATFORM.checkRequest) {
-    let checkSuccess = ACTIVE_PLATFORM.checkRequest(event, config);
+  let spotify_access_token = config.get().spotify.tokens.access_token;
+  let spotify_refresh_token = config.get().spotify.tokens.refresh_token;
 
-    if (!checkSuccess) {
-      return;
-    }
-  }
-
-  let spotify_access_token = config.spotify.tokens.access_token;
-  let spotify_refresh_token = config.spotify.tokens.refresh_token;
-
-  if (!spotify_access_token || !spotify_refresh_token) {
+  /* if (!spotify_access_token || !spotify_refresh_token) {
     const token_url = SpotifyApi.generateAccessUrl([
       "playlist-modify-private",
       "playlist-modify-public",
@@ -175,18 +133,20 @@ exports.handler = async event => {
       "user-library-modify"
     ]);
 
-    return await generateApiResponse(400, {
-      message: "You must generate an access token using the `token_url`",
-      token_url
-    });
-  }
+    callback(
+      null,
+      await generateApiResponse(400, {
+        message: "You must generate an access token using the `token_url`",
+        token_url
+      })
+    );
+  } */
 
   let { access_token, refresh_token } = await SpotifyApi.refreshToken(
     spotify_refresh_token
   );
 
-  config.spotify.access_token = access_token;
-  config.spotify.refresh_token = refresh_token;
+  config.set({ spotify: { access_token, refresh_token } });
 
   SpotifyApi.setAccessToken(access_token);
 
@@ -202,8 +162,8 @@ exports.handler = async event => {
 
   if (error) {
     console.log(error);
-    return await generateApiResponse(400, { error: error.message });
+    callback(null, await generateApiResponse(400, { error: error.message }));
   }
 
-  return await generateApiResponse(200, { message: message });
+  callback(null, await generateApiResponse(200, { message: message }));
 };
