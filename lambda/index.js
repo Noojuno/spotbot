@@ -38,20 +38,20 @@ const initCommands = async () => {
 
   commands.add("select", async data => {
     const playlistUrl = data.args.join("");
-    const playlistRegex = /^https?:\/\/(?:open|play)\.spotify\.com\/user\/([\w\d]+)\/playlist\/[\w\d]+$/i;
+    const playlistRegex = /^https?:\/\/(?:open|play)\.spotify\.com\/user\/([\w\d]+)\/playlist\/([\w\d]+$)/i;
 
     const regexRes = playlistRegex.exec(playlistUrl);
 
     console.log(regexRes);
 
-    if (!regexRes || !regexRes[1]) {
+    if (!regexRes || !regexRes[2]) {
       data.error = new Error("Invalid input url");
       return;
     }
 
     data.message = `[Playlist](${playlistUrl}) has been selected`;
 
-    config.set({ spotify: { selected_playlist: regexRes[1] } });
+    config.set({ spotify: { selected_playlist: regexRes[2] } });
   });
 
   commands.add("add", async data => {
@@ -98,7 +98,7 @@ const initCommands = async () => {
 };
 
 const generateApiResponse = async (status, body) => {
-  //await config.save();
+  await config.save();
 
   const response = {
     statusCode: 200,
@@ -116,6 +116,8 @@ const generateApiResponse = async (status, body) => {
 exports.handler = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false;
 
+  await config.load();
+
   if (
     !event.queryStringParameters ||
     !event.queryStringParameters.platform ||
@@ -125,11 +127,10 @@ exports.handler = async (event, context, callback) => {
       null,
       await generateApiResponse(404, { message: "Invalid platform" })
     );
+    return;
   }
 
   console.log(event);
-
-  await config.load();
 
   const platform = event.queryStringParameters.platform;
   ACTIVE_PLATFORM = PLATFORMS[platform];
@@ -176,7 +177,9 @@ exports.handler = async (event, context, callback) => {
   if (error) {
     console.log(error);
     callback(null, await generateApiResponse(400, { error: error.message }));
+    return;
   }
 
   callback(null, await generateApiResponse(200, { message: message }));
+  return;
 };
