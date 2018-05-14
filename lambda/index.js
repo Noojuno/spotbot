@@ -18,6 +18,8 @@ const PLATFORMS = { telegram, discord };
 let ACTIVE_PLATFORM = {};
 
 const initCommands = async () => {
+  commands.add("start", () => {});
+
   commands.add("create", async data => {
     const playlistName = data.args.join(" ");
 
