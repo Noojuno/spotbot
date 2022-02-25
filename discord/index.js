@@ -6,7 +6,7 @@ const client = new Discord.Client();
 const apiUrl =
   "https://sbhdndfmmg.execute-api.us-east-1.amazonaws.com/SpotBot/SpotBot?platform=discord";
 
-const botToken = "NDQzNTE1NzAxMzg3NDYwNjA4.Ddrg7g.aGe-zVXoqZPKuHwgLLBavfjd_GY";
+const botToken = "TOKEN GOES HERE";
 
 client.on("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
